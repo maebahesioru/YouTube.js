@@ -40,6 +40,20 @@ export default class CommentThread extends YTNode {
   }
 
   /**
+   * Continuation token of the next page of replies, or `null` when the
+   * thread has no further replies.
+   *
+   * Upstream keeps this in the private `#continuation` field only, which
+   * forces callers to call `getContinuation()` blindly. Exposing the token
+   * lets a frontend hand it back to the API and paginate lazily.
+   */
+  get continuation_token(): string | null {
+    const token = this.#continuation?.endpoint?.payload?.continuationCommand?.token;
+
+    return typeof token === 'string' && token.length > 0 ? token : null;
+  }
+
+  /**
    * Retrieves replies to this comment thread.
    */
   async getReplies(videoId?: string): Promise<CommentThread> {
