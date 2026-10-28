@@ -48,9 +48,22 @@ export default class CommentThread extends YTNode {
    * lets a frontend hand it back to the API and paginate lazily.
    */
   get continuation_token(): string | null {
-    const token = this.#continuation?.endpoint?.payload?.continuationCommand?.token;
+    // Depending on the response, the token hangs off either the bare
+    // continuation endpoint or the endpoint of the "show more" button.
+    const endpoints = [
+      this.#continuation?.endpoint,
+      this.#continuation?.button?.endpoint
+    ];
 
-    return typeof token === 'string' && token.length > 0 ? token : null;
+    for (const endpoint of endpoints) {
+      const payload = endpoint?.payload;
+      const token = payload?.continuationCommand?.token ?? payload?.token;
+
+      if (typeof token === 'string' && token.length > 0)
+        return token;
+    }
+
+    return null;
   }
 
   /**
